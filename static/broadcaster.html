@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель ведущего - Система управления потоковым вещанием</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-links">
+                    <a href="/index.html" class="nav-link">🎵 Плеер</a>
+                    <a href="/broadcaster.html" class="nav-link active">🎙️ Ведущий</a>
+                    <a href="/admin.html" id="adminLink" style="display: none;">⚙️ Администрирование</a>
+                </div>
+                <div class="user-info">
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn-logout">Выйти</button>
+                </div>
+            </div>
+        </nav>
+
+        <h1 style="margin-bottom: 20px;">🎙️ Управление эфиром</h1>
+
+        <div class="broadcaster-grid">
+            <!-- Левая колонка - Управление плейлистом -->
+            <div>
+                <!-- Загрузка файлов -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3>📁 Медиатека</h3>
+                    <div class="upload-area" id="uploadArea">
+                        📂 Нажмите или перетащите файлы сюда<br>
+                        <small>Поддерживаемые форматы: MP3, WAV, OGG (до 50МБ), MP4, WebM (до 1000МБ)</small>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept=".mp3,.wav,.ogg,.mp4,.webm" style="display: none;">
+                    <div id="mediaLibrary" class="media-list">
+                        <div class="loading">Загрузка медиатеки...</div>
+                    </div>
+                </div>
+
+                <!-- Плейлист -->
+                <div class="card">
+                    <h3>📋 Плейлист воспроизведения</h3>
+                    
+                    <!-- Выбор плейлиста -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Выберите плейлист:</label>
+                        <select id="playlistSelector" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">-- Выберите плейлист --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="playlist-controls">
+                        <button id="createPlaylistBtn" class="btn-secondary btn-sm">➕ Новый плейлист</button>
+                        <button id="activatePlaylistBtn" class="btn-secondary btn-sm">▶ Активировать</button>
+                        <button id="loopModeBtn" class="btn-secondary btn-sm">🔄 Зациклить</button>
+                        <button id="shuffleModeBtn" class="btn-secondary btn-sm">🔀 Перемешать</button>
+                        <button id="clearPlaylistBtn" class="btn-secondary btn-sm">🗑 Очистить</button>
+                    </div>
+                    <div id="playlistItems" class="playlist-items">
+                        <div class="loading">Выберите плейлист</div>
+                    </div>
+                    <div class="playlist-controls" style="margin-top: 15px;">
+                        <button id="startBroadcastBtn" class="btn-primary">📡 Начать эфир</button>
+                        <button id="stopBroadcastBtn" class="btn-secondary">⏹ Остановить эфир</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка - Сообщения -->
+            <div class="card">
+                <h3>💬 Сообщения от слушателей</h3>
+                <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="filterAll" class="btn-sm btn-secondary">📋 Все</button>
+                    <button id="filterNew" class="btn-sm btn-secondary">🆕 Новые</button>
+                    <button id="filterProgress" class="btn-sm btn-secondary">⏳ В работе</button>
+                    <button id="filterCompleted" class="btn-sm btn-secondary">✅ Завершенные</button>
+                </div>
+                <div id="messagesList" style="max-height: 600px; overflow-y: auto;">
+                    <div class="loading">Загрузка сообщений...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/broadcaster.js"></script>
+</body>
+</html>
