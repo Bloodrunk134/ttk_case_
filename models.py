@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, JSON, Index
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -16,8 +16,9 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     deleted_at = Column(DateTime(timezone=True), nullable=True)
     
-    # Relationships
-    messages = relationship("Message", back_populates="user", cascade="all, delete-orphan")
+    # Явно указываем foreign_keys для каждой связи
+    messages = relationship("Message", foreign_keys="Message.user_id", back_populates="user", cascade="all, delete-orphan")
+    responses = relationship("Message", foreign_keys="Message.responded_by", back_populates="responder")
     media_files = relationship("MediaLibrary", back_populates="user", cascade="all, delete-orphan")
     playlists = relationship("Playlist", back_populates="user", cascade="all, delete-orphan")
     
@@ -34,11 +35,14 @@ class Message(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     text = Column(Text, nullable=False)
     status = Column(String(20), nullable=False, default='new')
+    response_text = Column(Text, nullable=True)
+    responded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    responded_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    user = relationship("User", back_populates="messages")
+    user = relationship("User", foreign_keys=[user_id], back_populates="messages")
+    responder = relationship("User", foreign_keys=[responded_by], back_populates="responses")
 
 class VoiceMessage(Base):
     __tablename__ = "voice_messages"
@@ -49,10 +53,14 @@ class VoiceMessage(Base):
     file_size = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=True)
     status = Column(String(20), nullable=False, default='new')
+    response_text = Column(Text, nullable=True)
+    responded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    responded_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     listened_at = Column(DateTime(timezone=True), nullable=True)
     
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
+    responder = relationship("User", foreign_keys=[responded_by])
 
 class MediaLibrary(Base):
     __tablename__ = "media_library"
@@ -67,7 +75,6 @@ class MediaLibrary(Base):
     duration = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="media_files")
     playlist_items = relationship("PlaylistItem", back_populates="media", cascade="all, delete-orphan")
 
@@ -83,7 +90,6 @@ class Playlist(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="playlists")
     items = relationship("PlaylistItem", back_populates="playlist", cascade="all, delete-orphan")
 
@@ -96,7 +102,6 @@ class PlaylistItem(Base):
     position = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     playlist = relationship("Playlist", back_populates="items")
     media = relationship("MediaLibrary", back_populates="playlist_items")
 

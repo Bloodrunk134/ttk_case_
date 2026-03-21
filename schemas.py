@@ -62,20 +62,6 @@ class UserResponse(BaseModel):
 class UserUpdate(BaseModel):
     login: str
     full_name: str
-    
-    @validator('login')
-    def validate_login(cls, v):
-        if not v or not v.isalpha():
-            raise ValueError('Логин должен содержать только латинские буквы')
-        return v
-    
-    @validator('full_name')
-    def validate_full_name(cls, v):
-        if not v:
-            raise ValueError('ФИО обязательно')
-        if not re.match(r'^[А-Яа-я\s]+$', v):
-            raise ValueError('ФИО должно содержать только русские буквы и пробелы')
-        return v
 
 class UserRolesUpdate(BaseModel):
     roles: List[str]
@@ -94,6 +80,9 @@ class MessageResponse(BaseModel):
     user_name: Optional[str] = None
     text: str
     status: str
+    response_text: Optional[str] = None
+    responded_by: Optional[int] = None
+    responded_at: Optional[datetime] = None
     created_at: datetime
     
     class Config:
@@ -101,6 +90,7 @@ class MessageResponse(BaseModel):
 
 class MessageStatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(new|in_progress|completed)$")
+    response_text: Optional[str] = None
 
 # =============================================
 # Media schemas

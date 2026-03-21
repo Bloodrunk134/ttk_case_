@@ -97,18 +97,15 @@ const API = {
         return await this.request('/admin/users');
     },
     
-    async updateMessageStatus(messageId, status) {
-        return await this.request(`/messages/${messageId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status })
-        });
+    async getMediaFiles() {
+        return await this.request('/broadcaster/media');
     },
     
-    async sendVoiceMessage(audioBlob) {
+    async uploadMedia(file) {
         const formData = new FormData();
-        formData.append('audio', audioBlob, 'voice-message.webm');
+        formData.append('file', file);
         
-        const response = await fetch(`${this.baseURL}/voice-messages`, {
+        const response = await fetch(`${this.baseURL}/broadcaster/media/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.token}`
@@ -118,9 +115,38 @@ const API = {
         
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Ошибка отправки');
+            throw new Error(error.detail || 'Ошибка загрузки');
         }
         
         return await response.json();
+    },
+    
+    async getPlaylists() {
+        return await this.request('/broadcaster/playlists');
+    },
+    
+    async createPlaylist(playlistData) {
+        return await this.request('/broadcaster/playlists', {
+            method: 'POST',
+            body: JSON.stringify(playlistData)
+        });
+    },
+    
+    async getPlaylistItems(playlistId) {
+        return await this.request(`/broadcaster/playlists/${playlistId}/items`);
+    },
+    
+    async addPlaylistItem(playlistId, mediaId) {
+        return await this.request(`/broadcaster/playlists/${playlistId}/items`, {
+            method: 'POST',
+            body: JSON.stringify({ media_id: mediaId })
+        });
+    },
+    
+    async updateMessageStatus(messageId, status) {
+        return await this.request(`/messages/${messageId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
     }
 };
