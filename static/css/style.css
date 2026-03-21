@@ -47,13 +47,25 @@ body {
     gap: 8px;
 }
 
-.nav-link:hover {
+.nav-link:hover:not(.active) {
     background: #f0f0f0;
+    transform: translateY(-1px);
 }
 
 .nav-link.active {
     background: #007bff;
     color: white;
+}
+
+.nav-link.disabled,
+.nav-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-link:hover {
+    background: #f0f0f0;
 }
 
 .user-info {
@@ -136,6 +148,8 @@ body {
 .control-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 .volume-control {
@@ -187,16 +201,19 @@ body {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
 }
 
 .btn-secondary:hover:not(:disabled) {
     background: #218838;
+    transform: translateY(-1px);
 }
 
 .btn-secondary:disabled {
     background: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 .btn-primary {
@@ -208,16 +225,19 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    transition: background 0.3s;
+    transition: all 0.3s;
 }
 
 .btn-primary:hover:not(:disabled) {
     background: #0056b3;
+    transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
     background: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 /* Сообщения */
@@ -709,6 +729,22 @@ body {
 .btn-sm {
     padding: 5px 10px;
     font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-sm:hover:not(:disabled) {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.btn-sm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 /* Бейджи статусов */

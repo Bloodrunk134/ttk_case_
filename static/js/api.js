@@ -19,15 +19,40 @@ const API = {
                 headers
             });
             
+            // Пытаемся получить тело ответа
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
+            
             if (response.status === 401) {
                 this.logout();
                 throw new Error('Сессия истекла');
             }
             
-            const data = await response.json();
+            // Обработка ошибок валидации (422)
+            if (response.status === 422) {
+                let errorMessage = 'Ошибка валидации данных';
+                if (data && data.detail) {
+                    if (Array.isArray(data.detail)) {
+                        // Форматируем ошибки Pydantic
+                        errorMessage = data.detail.map(err => {
+                            const field = err.loc?.join('.') || 'поле';
+                            return `${field}: ${err.msg}`;
+                        }).join('; ');
+                    } else {
+                        errorMessage = data.detail;
+                    }
+                }
+                throw new Error(errorMessage);
+            }
             
             if (!response.ok) {
-                throw new Error(data.detail || 'Ошибка запроса');
+                const errorMsg = data && data.detail ? data.detail : `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(errorMsg);
             }
             
             return data;
@@ -44,7 +69,7 @@ const API = {
                 login: userData.login,
                 full_name: userData.fullname,
                 password: userData.password,
-                password_confirm: userData.password
+                password_confirm: userData.password_confirm || userData.password
             })
         });
     },
@@ -56,10 +81,17 @@ const API = {
             body: JSON.stringify({ login, password })
         });
         
-        const data = await response.json();
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = await response.text();
+        }
         
         if (!response.ok) {
-            throw new Error(data.detail || 'Ошибка авторизации');
+            const errorMsg = data && data.detail ? data.detail : 'Неверный логин или пароль';
+            throw new Error(errorMsg);
         }
         
         this.token = data.access_token;
@@ -114,8 +146,13 @@ const API = {
         });
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Ошибка загрузки');
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch(e) {
+                errorData = { detail: 'Ошибка загрузки файла' };
+            }
+            throw new Error(errorData.detail || 'Ошибка загрузки');
         }
         
         return await response.json();
@@ -143,10 +180,14 @@ const API = {
         });
     },
     
-    async updateMessageStatus(messageId, status) {
+    async updateMessageStatus(messageId, status, responseText = null) {
+        const body = { status };
+        if (responseText) {
+            body.response_text = responseText;
+        }
         return await this.request(`/messages/${messageId}/status`, {
             method: 'PUT',
-            body: JSON.stringify({ status })
+            body: JSON.stringify(body)
         });
     }
 };
