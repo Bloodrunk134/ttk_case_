@@ -33,6 +33,7 @@ class Message(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    channel_id = Column(Integer, ForeignKey("broadcast_channels.id", ondelete="SET NULL"), nullable=True, index=True)
     text = Column(Text, nullable=False)
     status = Column(String(20), nullable=False, default='new')
     response_text = Column(Text, nullable=True)
@@ -43,12 +44,14 @@ class Message(Base):
     
     user = relationship("User", foreign_keys=[user_id], back_populates="messages")
     responder = relationship("User", foreign_keys=[responded_by], back_populates="responses")
+    channel = relationship("BroadcastChannel")
 
 class VoiceMessage(Base):
     __tablename__ = "voice_messages"
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    channel_id = Column(Integer, ForeignKey("broadcast_channels.id", ondelete="SET NULL"), nullable=True, index=True)
     file_path = Column(String(500), nullable=False)
     file_size = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=True)
@@ -61,6 +64,7 @@ class VoiceMessage(Base):
     
     user = relationship("User", foreign_keys=[user_id])
     responder = relationship("User", foreign_keys=[responded_by])
+    channel = relationship("BroadcastChannel")
 
 class MediaLibrary(Base):
     __tablename__ = "media_library"
@@ -116,6 +120,27 @@ class BroadcastStatus(Base):
     volume = Column(Integer, default=70)
     is_video_mode = Column(Boolean, default=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class BroadcastChannel(Base):
+    __tablename__ = "broadcast_channels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(120), nullable=False)
+    playlist_id = Column(Integer, ForeignKey("playlists.id", ondelete="SET NULL"), nullable=True)
+    is_live = Column(Boolean, default=False)
+    current_media_id = Column(Integer, ForeignKey("media_library.id", ondelete="SET NULL"), nullable=True)
+    current_media_type = Column(String(10), nullable=True)
+    current_media_title = Column(String(255), nullable=True)
+    current_media_url = Column(String(500), nullable=True)
+    volume = Column(Integer, default=80)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user = relationship("User")
+    playlist = relationship("Playlist")
+    current_media = relationship("MediaLibrary")
 
 class PresenterRecording(Base):
     __tablename__ = "presenter_recordings"

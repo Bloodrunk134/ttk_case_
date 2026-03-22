@@ -2,17 +2,60 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from sqlalchemy import inspect, text
 import os
 from contextlib import asynccontextmanager
 
 from config import settings
 from database import engine, Base
-from routers import auth, admin, player, broadcaster
+from routers import auth, admin, player, broadcaster, realtime
+
+
+def ensure_legacy_schema():
+    """Add missing columns for deployments created from the old schema.sql."""
+    inspector = inspect(engine)
+
+    if not inspector.has_table("messages"):
+        return
+
+    message_columns = {column["name"] for column in inspector.get_columns("messages")}
+    voice_columns = set()
+    if inspector.has_table("voice_messages"):
+        voice_columns = {column["name"] for column in inspector.get_columns("voice_messages")}
+
+    statements = []
+
+    if "response_text" not in message_columns:
+        statements.append("ALTER TABLE messages ADD COLUMN response_text TEXT")
+    if "responded_by" not in message_columns:
+        statements.append("ALTER TABLE messages ADD COLUMN responded_by INTEGER REFERENCES users(id)")
+    if "responded_at" not in message_columns:
+        statements.append("ALTER TABLE messages ADD COLUMN responded_at TIMESTAMP")
+    if "channel_id" not in message_columns:
+        statements.append("ALTER TABLE messages ADD COLUMN channel_id INTEGER REFERENCES broadcast_channels(id)")
+
+    if voice_columns:
+        if "response_text" not in voice_columns:
+            statements.append("ALTER TABLE voice_messages ADD COLUMN response_text TEXT")
+        if "responded_by" not in voice_columns:
+            statements.append("ALTER TABLE voice_messages ADD COLUMN responded_by INTEGER REFERENCES users(id)")
+        if "responded_at" not in voice_columns:
+            statements.append("ALTER TABLE voice_messages ADD COLUMN responded_at TIMESTAMP")
+        if "channel_id" not in voice_columns:
+            statements.append("ALTER TABLE voice_messages ADD COLUMN channel_id INTEGER REFERENCES broadcast_channels(id)")
+
+    if not statements:
+        return
+
+    with engine.begin() as connection:
+        for statement in statements:
+            connection.execute(text(statement))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     Base.metadata.create_all(bind=engine)
+    ensure_legacy_schema()
     
     # Создание папок для загрузок
     os.makedirs(settings.upload_folder, exist_ok=True)
@@ -45,6 +88,7 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(player.router)
 app.include_router(broadcaster.router)
+app.include_router(realtime.router)
 
 # Статические файлы
 app.mount("/media", StaticFiles(directory=settings.upload_folder), name="media")

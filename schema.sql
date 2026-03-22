@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS messages (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     text TEXT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'new',
+    response_text TEXT,
+    responded_by INTEGER REFERENCES users(id),
+    responded_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
     
@@ -81,6 +84,9 @@ CREATE TABLE IF NOT EXISTS voice_messages (
     file_size INTEGER NOT NULL, -- Размер в байтах
     duration INTEGER, -- Длительность в секундах
     status VARCHAR(20) NOT NULL DEFAULT 'new',
+    response_text TEXT,
+    responded_by INTEGER REFERENCES users(id),
+    responded_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     listened_at TIMESTAMP,
     

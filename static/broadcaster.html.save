@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель ведущего - Система управления потоковым вещанием</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-links">
+                    <a href="/index.html" class="nav-link">🎵 Плеер</a>
+                    <a href="/broadcaster.html" class="nav-link active">🎙️ Ведущий</a>
+                    <a href="/admin.html" id="adminLink" style="display: none;">⚙️ Администрирование</a>
+                </div>
+                <div class="user-info">
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn-logout">Выйти</button>
+                </div>
+            </div>
+        </nav>
+
+        <h1>🎙️ Панель ведущего</h1>
+
+        <!-- Статус трансляции -->
+        <div id="broadcastStatus" class="broadcast-status off-air">
+            ⚫ Трансляция остановлена
+        </div>
+
+        <!-- Сейчас играет -->
+        <div id="nowPlaying" class="now-playing" style="display: none;">
+            <h4>🎵 Сейчас в эфире:</h4>
+            <div class="track-name" id="currentTrackName">-</div>
+            <div id="playlistInfo" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
+        </div>
+
+        <!-- Вкладки -->
+        <div class="tabs">
+            <button class="tab active" data-tab="broadcast">📡 Управление эфиром</button>
+            <button class="tab" data-tab="media">📁 Медиатека</button>
+            <button class="tab" data-tab="messages">💬 Сообщения</button>
+        </div>
+
+        <!-- Вкладка: Управление эфиром -->
+        <div id="tab-broadcast" class="tab-content active">
+            <div class="card">
+                <h3>🎛️ Управление трансляцией</h3>
+                
+                <label>Выберите плейлист:</label>
+                <select id="playlistSelector" class="playlist-selector">
+			 <option value="">-- Загрузка плейлистов --</option>
+		</select>
+		<button id="createPlaylistBtn" class="btn-secondary" style="margin-top: 10px; width: 100%;">➕ Создать новый плейлист</button>
+                
+                <div class="transport-controls">
+                    <button id="startBroadcastBtn" class="btn-primary transport-btn">▶ Начать трансляцию</button>
+                    <button id="stopBroadcastBtn" class="btn-secondary transport-btn">⏹ Остановить</button>
+                    <button id="prevTrackBtn" class="btn-secondary transport-btn">⏮ Предыдущий</button>
+                    <button id="nextTrackBtn" class="btn-secondary transport-btn">Следующий ⏭</button>
+                </div>
+                
+                <div class="volume-control">
+                    <label>🔊 Громкость трансляции:</label>
+                    <input type="range" id="broadcastVolume" min="0" max="100" value="80">
+                    <span id="volumeValue">80%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Медиатека -->
+        <div id="tab-media" class="tab-content">
+            <div class="card">
+                <h3>📁 Моя медиатека</h3>
+                <div class="upload-area" id="uploadArea">
+                    📂 Нажмите или перетащите файлы сюда<br>
+                    <small>Поддерживаемые форматы: MP3, WAV, OGG (до 50МБ)</small>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".mp3,.wav,.ogg" style="display: none;">
+                <div id="mediaLibrary" class="media-list">
+                    <div class="loading">Загрузка медиатеки...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Сообщения -->
+        <div id="tab-messages" class="tab-content">
+            <div class="card">
+                <h3>💬 Сообщения от слушателей</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="new">🆕 Новые</button>
+                    <button class="filter-btn" data-filter="in_progress">⏳ В работе</button>
+                    <button class="filter-btn" data-filter="completed">✅ Завершенные</button>
+                </div>
+                <div id="messagesList" style="max-height: 500px; overflow-y: auto;">
+                    <div class="loading">Загрузка сообщений...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/broadcaster.js"></script>
+    <script src="/js/broadcaster-messages.js"></script>
+</body>
+</html>

@@ -72,10 +72,13 @@ class UserRolesUpdate(BaseModel):
 
 class MessageCreate(BaseModel):
     text: str = Field(..., min_length=1, max_length=1000)
+    broadcast_id: Optional[int] = Field(None, gt=0)
 
 class MessageResponse(BaseModel):
     id: int
     user_id: int
+    broadcast_id: Optional[int] = None
+    broadcast_name: Optional[str] = None
     user_login: Optional[str] = None
     user_name: Optional[str] = None
     text: str
@@ -89,6 +92,29 @@ class MessageResponse(BaseModel):
         from_attributes = True
 
 class MessageStatusUpdate(BaseModel):
+    status: str = Field(..., pattern="^(new|in_progress|completed)$")
+    response_text: Optional[str] = None
+
+class VoiceMessageListResponse(BaseModel):
+    id: int
+    user_id: int
+    broadcast_id: Optional[int] = None
+    broadcast_name: Optional[str] = None
+    user_login: Optional[str] = None
+    user_name: Optional[str] = None
+    file_url: str
+    file_size: int
+    duration: Optional[int] = None
+    status: str
+    response_text: Optional[str] = None
+    responded_by: Optional[int] = None
+    responded_at: Optional[datetime] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class VoiceMessageStatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(new|in_progress|completed)$")
     response_text: Optional[str] = None
 
@@ -165,6 +191,42 @@ class BroadcastControl(BaseModel):
     is_video_mode: Optional[bool] = None
     current_media_id: Optional[int] = None
     current_media_type: Optional[str] = None
+
+
+class BroadcastChannelCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    playlist_id: Optional[int] = None
+    volume: Optional[int] = Field(80, ge=0, le=100)
+
+
+class BroadcastChannelUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=120)
+    playlist_id: Optional[int] = None
+    volume: Optional[int] = Field(None, ge=0, le=100)
+
+
+class BroadcastChannelStart(BaseModel):
+    playlist_id: Optional[int] = None
+
+
+class BroadcastChannelResponse(BaseModel):
+    id: int
+    user_id: int
+    user_login: Optional[str] = None
+    user_name: Optional[str] = None
+    name: str
+    playlist_id: Optional[int] = None
+    is_live: bool
+    current_media_id: Optional[int] = None
+    current_media_type: Optional[str] = None
+    current_media_title: Optional[str] = None
+    current_media_url: Optional[str] = None
+    volume: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
 
 # =============================================
 # Voice message schemas

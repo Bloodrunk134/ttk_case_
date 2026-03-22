@@ -4,23 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Радио - Система потокового вещания</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20260322-3">
 </head>
 <body>
     <div class="container">
-        <!-- Навигация -->
         <nav class="navbar">
             <div class="nav-container">
                 <div class="nav-links">
-                    <a href="/index.html" class="nav-link active">
-                        <span>🎵</span> Плеер
-                    </a>
-                    <a href="/broadcaster.html" class="nav-link" id="broadcasterLink" style="display: none;">
-                        <span>🎙️</span> Ведущий
-                    </a>
-                    <a href="/admin.html" class="nav-link" id="adminLink" style="display: none;">
-                        <span>⚙️</span> Администрирование
-                    </a>
+                    <a href="/index.html" class="nav-link active">Плеер</a>
+                    <a href="/broadcaster.html" class="nav-link" id="broadcasterLink" style="display: none;">Ведущий</a>
+                    <a href="/admin.html" class="nav-link" id="adminLink" style="display: none;">Администрирование</a>
                 </div>
                 <div class="user-info">
                     <span id="userName"></span>
@@ -29,30 +22,35 @@
             </div>
         </nav>
 
-        <!-- Основной контент -->
         <div class="main-grid">
-            <!-- Левая колонка - Плеер -->
             <div class="card">
-                <h2>🎵 Аудиоплеер</h2>
+                <h2>Аудиоплеер</h2>
+
+                <div class="broadcast-picker" style="margin-bottom: 12px;">
+                    <label for="broadcastSelect" class="broadcast-picker-label">Выберите эфир:</label>
+                    <div class="broadcast-select-wrap">
+                        <select id="broadcastSelect" class="broadcast-select">
+                            <option value="">Загрузка эфиров...</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="player-controls">
-                    <button id="playBtn" class="control-btn">▶ Воспроизвести</button>
-                    <button id="pauseBtn" class="control-btn" disabled>⏸ Пауза</button>
+                    <button id="playBtn" class="control-btn">Воспроизвести</button>
+                    <button id="pauseBtn" class="control-btn" disabled>Пауза</button>
                     <div class="volume-control">
-                        <label>🔊 Громкость:</label>
+                        <label>Громкость:</label>
                         <input type="range" id="volumeSlider" min="0" max="100" value="80">
                     </div>
                 </div>
+
                 <audio id="streamAudio" preload="none"></audio>
-                <div class="now-playing">
-                    🎙️ Сейчас в эфире: Радио Эфир
-                </div>
+                <div class="now-playing" id="nowPlaying">Сейчас в эфире: выберите канал</div>
             </div>
 
-            <!-- Правая колонка - Чат и сообщения -->
             <div class="card">
-                <h2>💬 Чат с ведущим</h2>
-                
-                <!-- История сообщений -->
+                <h2>Чат с ведущим</h2>
+
                 <div style="margin-bottom: 20px;">
                     <h3>История сообщений</h3>
                     <div id="messagesList" class="messages-list">
@@ -60,14 +58,13 @@
                     </div>
                 </div>
 
-                <!-- Форма отправки сообщения -->
                 <div>
                     <h3>Написать ведущему</h3>
                     <div class="feedback-form">
                         <textarea id="messageText" rows="3" placeholder="Введите ваше сообщение..."></textarea>
                         <div class="voice-controls">
-                            <button id="recordVoiceBtn" class="btn-secondary">🎙 Записать голос</button>
-                            <button id="stopRecordBtn" class="btn-secondary" disabled>⏹ Остановить запись</button>
+                            <button id="recordVoiceBtn" class="btn-secondary">Записать голос</button>
+                            <button id="stopRecordBtn" class="btn-secondary" disabled>Остановить запись</button>
                         </div>
                         <button id="sendBtn" class="btn-primary">Отправить</button>
                         <div id="recordingStatus" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
@@ -80,6 +77,6 @@
     <script src="/js/utils.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/player.js"></script>
+    <script src="/js/player.js?v=20260322-3"></script>
 </body>
 </html>
