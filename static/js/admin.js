@@ -20,7 +20,7 @@ async function loadUsers() {
     const tableBody = document.getElementById('usersTableBody');
     
     try {
-        tableBody.innerHTML = '米<table border="1" cellpadding="10"> 米<td colspan="6" class="loading">⏳ Загрузка пользователей... 米</td> 米</table>';
+        tableBody.innerHTML = '<tr><td colspan="6" class="loading">⏳ Загрузка пользователей...</td></tr>';
         
         const token = localStorage.getItem('accessToken');
         console.log('Token:', token ? token.substring(0, 50) + '...' : 'null');
@@ -30,7 +30,7 @@ async function loadUsers() {
             return;
         }
         
-        // НЕ передаем роль в URL, чтобы избежать ошибки 500
+        // Формируем параметры запроса
         const params = new URLSearchParams();
         if (currentFilters.login) params.append('login', currentFilters.login);
         if (currentFilters.fullname) params.append('full_name', currentFilters.fullname);
@@ -67,7 +67,6 @@ async function loadUsers() {
         if (currentFilters.role) {
             users = users.filter(user => {
                 let userRoles = user.roles;
-                // Если roles это строка JSON, парсим
                 if (typeof userRoles === 'string') {
                     try {
                         userRoles = JSON.parse(userRoles);
@@ -75,11 +74,9 @@ async function loadUsers() {
                         userRoles = [userRoles];
                     }
                 }
-                // Если roles это массив
                 if (Array.isArray(userRoles)) {
                     return userRoles.includes(currentFilters.role);
                 }
-                // Если roles это строка
                 return userRoles === currentFilters.role;
             });
             console.log('Filtered by role:', currentFilters.role, 'found:', users.length);
@@ -186,30 +183,46 @@ if (resetFilters) {
     });
 }
 
+// ========== ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ ИЗ СПИСКА ==========
+function getUserById(userId) {
+    // Получаем всех пользователей и находим нужного
+    const rows = document.querySelectorAll('#usersTableBody tr');
+    for (let row of rows) {
+        const userIdAttr = row.getAttribute('data-user-id');
+        if (userIdAttr && parseInt(userIdAttr) === userId) {
+            const login = row.cells[1]?.querySelector('strong')?.textContent || '';
+            const fullname = row.cells[2]?.textContent || '';
+            const rolesHtml = row.cells[3]?.innerHTML || '';
+            
+            // Парсим роли из HTML
+            const roles = [];
+            const roleSpans = row.cells[3]?.querySelectorAll('.role-badge') || [];
+            roleSpans.forEach(span => {
+                if (span.classList.contains('role-admin')) roles.push('admin');
+                else if (span.classList.contains('role-broadcaster')) roles.push('broadcaster');
+                else if (span.classList.contains('role-user')) roles.push('user');
+            });
+            
+            return { id: userId, login, full_name: fullname, roles };
+        }
+    }
+    return null;
+}
+
 // ========== РЕДАКТИРОВАНИЕ ПОЛЬЗОВАТЕЛЯ ==========
 window.editUser = async (userId) => {
-    const token = localStorage.getItem('accessToken');
+    const user = getUserById(userId);
     
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) throw new Error('Ошибка загрузки');
-        
-        const user = await response.json();
-        
-        currentUserId = userId;
-        const modal = document.getElementById('editModal');
-        document.getElementById('editLogin').value = user.login;
-        document.getElementById('editFullname').value = user.full_name;
-        modal.style.display = 'block';
-    } catch (error) {
-        Utils.showNotification('Ошибка загрузки данных пользователя', 'error');
+    if (!user) {
+        Utils.showNotification('Не удалось загрузить данные пользователя', 'error');
+        return;
     }
+    
+    currentUserId = userId;
+    const modal = document.getElementById('editModal');
+    document.getElementById('editLogin').value = user.login;
+    document.getElementById('editFullname').value = user.full_name;
+    modal.style.display = 'block';
 };
 
 // ========== УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ ==========
@@ -244,41 +257,33 @@ window.changePassword = (userId) => {
 
 // ========== НАЗНАЧЕНИЕ РОЛЕЙ ==========
 window.assignRoles = async (userId) => {
-    currentUserId = userId;
-    const token = localStorage.getItem('accessToken');
+    const user = getUserById(userId);
     
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) throw new Error('Ошибка загрузки');
-        
-        const user = await response.json();
-        
-        const modal = document.getElementById('rolesModal');
-        const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
-        
-        let rolesArray = user.roles;
-        if (typeof rolesArray === 'string') {
-            try {
-                rolesArray = JSON.parse(rolesArray);
-            } catch(e) {
-                rolesArray = [rolesArray];
-            }
-        }
-        
-        checkboxes.forEach(cb => {
-            cb.checked = rolesArray && rolesArray.includes(cb.value);
-        });
-        
-        modal.style.display = 'block';
-    } catch (error) {
-        Utils.showNotification('Ошибка загрузки ролей', 'error');
+    if (!user) {
+        Utils.showNotification('Не удалось загрузить данные пользователя', 'error');
+        return;
     }
+    
+    currentUserId = userId;
+    const modal = document.getElementById('rolesModal');
+    const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
+    
+    let rolesArray = user.roles;
+    if (typeof rolesArray === 'string') {
+        try {
+            rolesArray = JSON.parse(rolesArray);
+        } catch(e) {
+            rolesArray = [rolesArray];
+        }
+    }
+    
+    if (!Array.isArray(rolesArray)) rolesArray = [rolesArray];
+    
+    checkboxes.forEach(cb => {
+        cb.checked = rolesArray && rolesArray.includes(cb.value);
+    });
+    
+    modal.style.display = 'block';
 };
 
 // Обработчики форм
